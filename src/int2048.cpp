@@ -113,11 +113,30 @@ void int2048::mul_karatsuba(const int2048& other, int2048& result) const {
     
     a_sum.mul_karatsuba(b_sum, z1);
     
-    z1.sign_ = !z1.sign_;
-    z1.add_abs(z0, tmp1);
-    tmp1.sign_ = z1.sign_;
-    if (tmp1.compare_abs(z2) >= 0) { z1 = tmp1; z1.minus(z2); }
-    else { z1 = z2; z1.sign_ = !z1.sign_; z1.add_abs(tmp1, tmp2); tmp2.sign_ = z1.sign_; z1 = tmp2; }
+    // z1 = z1 - z0 - z2
+    // First compute z1 - z0
+    int2048 z1_minus_z0;
+    if (z1.compare_abs(z0) >= 0) {
+        z1_minus_z0.sign_ = true;
+        z1.sub_abs(z0, z1_minus_z0);
+    } else {
+        z1_minus_z0.sign_ = false;
+        z0.sub_abs(z1, z1_minus_z0);
+    }
+    // Then compute (z1 - z0) - z2
+    if (z1_minus_z0.sign_ == true) {
+        if (z1_minus_z0.compare_abs(z2) >= 0) {
+            z1_minus_z0.sub_abs(z2, z1);
+            z1.sign_ = true;
+        } else {
+            z2.sub_abs(z1_minus_z0, z1);
+            z1.sign_ = false;
+        }
+    } else {
+        z1_minus_z0.sign_ = false; // already false
+        z1_minus_z0.sub_abs(z2, z1);
+        z1.sign_ = false;
+    }
     
     result.digits_.assign(std::max({z0.digits_.size() + 2*k, z1.digits_.size() + k, z2.digits_.size()}), 0);
     
