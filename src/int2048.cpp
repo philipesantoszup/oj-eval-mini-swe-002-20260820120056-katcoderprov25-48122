@@ -58,7 +58,7 @@ void int2048::sub_abs(const int2048& other, int2048& result) const {
 }
 
 void int2048::mul_school(const int2048& other, int2048& result) const {
-    result.digits_.assign(digits_.size() + other.digits_.size(), 0);
+    result.digits_.assign(digits_.size() + other.digits_.size() + 1, 0);
     
     for (size_t i = 0; i < digits_.size(); ++i) {
         unsigned long long carry = 0;
@@ -108,10 +108,8 @@ void int2048::mul_karatsuba(const int2048& other, int2048& result) const {
     a1.mul_karatsuba(b1, z2);
     
     int2048 a_sum, b_sum;
-    if (a1.compare_abs(a0) >= 0) { a_sum.sign_ = true; a1.sub_abs(a0, a_sum); }
-    else { a_sum.sign_ = false; a0.sub_abs(a1, a_sum); }
-    if (b1.compare_abs(b0) >= 0) { b_sum.sign_ = true; b1.sub_abs(b0, b_sum); }
-    else { b_sum.sign_ = false; b0.sub_abs(b1, b_sum); }
+    a_sum.sign_ = true; a0.add_abs(a1, a_sum);
+    b_sum.sign_ = true; b0.add_abs(b1, b_sum);
     
     a_sum.mul_karatsuba(b_sum, z1);
     
